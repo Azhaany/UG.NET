@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UG.NET - Modern Chat Application</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --dark: #1d3557;
+            --light: #f8f9fa;
+            --success: #4cc9f0;
+            --gray: #adb5bd;
+            --dark-gray: #495057;
+            --border-radius: 12px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1d3557, #3a0ca3);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            display: flex;
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 300px;
+            background: var(--dark);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo-container {
+            padding: 25px 20px;
+            background: rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, var(--accent), var(--success));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .app-name {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .app-name span {
+            color: var(--accent);
+        }
+
+        .search-container {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .search-box {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-box i {
+            color: var(--gray);
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: white;
+            width: 100%;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .search-box input::placeholder {
+            color: var(--gray);
+        }
+
+        .contacts {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .contact {
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .contact:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .contact.active {
+            background: var(--primary);
+        }
+
+        .contact-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .contact-info {
+            flex: 1;
+        }
+
+        .contact-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .last-message {
+            font-size: 13px;
+            color: var(--gray);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+        }
+
+        .contact-meta {
+            text-align: right;
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        /* Chat Area Styles */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .current-contact {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #38b000;
+            margin-left: 10px;
+        }
+
+        .chat-actions i {
+            font-size: 20px;
+            color: var(--gray);
+            margin-left: 20px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .chat-actions i:hover {
+            color: var(--primary);
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f0f4f8;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            max-width: 65%;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            position: relative;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .received {
+            background: white;
+            align-self: flex-start;
+            border-top-left-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .sent {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            margin-top: 5px;
+            text-align: right;
+            opacity: 0.8;
+        }
+
+        .sent .message-time {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .input-container {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .input-container i {
+            font-size: 20px;
+            color: var(--gray);
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .input-container i:hover {
+            color: var(--primary);
+        }
+
+        .message-input {
+            flex: 1;
+            border: 1px solid #e9ecef;
+            border-radius: 30px;
+            padding: 12px 20px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .message-input:focus {
+            border-color: var(--accent);
+        }
+
+        .send-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .send-button:hover {
+            background: var(--secondary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 95vh;
+            }
+            
+            .sidebar {
+                width: 80px;
+            }
+            
+            .logo-container {
+                justify-content: center;
+                padding: 25px 10px;
+            }
+            
+            .logo-text, .contact-info, .contact-meta {
+                display: none;
+            }
+            
+            .search-box input {
+                display: none;
+            }
+            
+            .search-box {
+                justify-content: center;
+                padding: 10px;
+            }
+            
+            .contact {
+                justify-content: center;
+                padding: 15px 10px;
+            }
+            
+            .message {
+                max-width: 80%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .app-name {
+                font-size: 18px;
+            }
+            
+            .message {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo-container">
+                <div class="logo">U</div>
+                <div class="app-name">UG<span>.NET</span></div>
+            </div>
+            
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search contacts...">
+                </div>
+            </div>
+            
+            <div class="contacts">
+                <div class="contact active">
+                    <div class="contact-avatar">AK</div>
+                    <div class="contact-info">
+                        <div class="contact-name">Kaliisa Ahmad<span class="status-dot"></span></div>
+                        <div class="last-message">See you at the meeting tomorrow!</div>
+                    </div>
+                    <div class="contact-meta">
+                        <div>2:45 PM</div>
+                    </div>
+                </div>
+                
+                <div class="contact">
+                    <div class="contact-avatar">AS</div>
+                    <div class="contact-info">
+                        <div class="contact-name">Ali Serujogi</div>
+                        <div class="last-message">Thanks for the help!</div>
+                    </div>
+                    <div class="contact-meta">
+                        <div>Yesterday</div>
+                    </div>
+                </div>
+                
+                <div class="contact">
+                    <div class="contact-avatar">FO</div>
+                    <div class="contact-info">
+                        <div class="contact-name">Fatmah Omar</div>
+                        <div class="last-message">Did you see the new project specs?</div>
+                    </div>
+                    <div class="contact-meta">
+                        <div>Wed</div>
+                    </div>
+                </div>
+                
+                <div class="contact">
+                    <div class="contact-avatar">IO</div>
+                    <div class="contact-info">
+                        <div class="contact-name">Issac Ozan</div>
+                        <div class="last-message">Call me when you're free</div>
+                    </div>
+                    <div class="contact-meta">
+                        <div>Mon</div>
+                    </div>
+                </div>
+                
+                <div class="contact">
+                    <div class="contact-avatar">YK</div>
+                    <div class="contact-info">
+                        <div class="contact-name">Yusuf Khan</div>
+                        <div class="last-message">The files have been uploaded</div>
+                    </div>
+                    <div class="contact-meta">
+                        <div>Sun</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Area -->
+        <div class="chat-area">
+            <div class="chat-header">
+                <div class="current-contact">
+                    <div class="contact-avatar">AA</div>
+                    <div>
+                        <div class="contact-name">Ahmad Azhaan <span class="status-dot"></span></div>
+                        <div class="last-message">Online</div>
+                    </div>
+                </div>
+                
+                <div class="chat-actions">
+                    <i class="fas fa-phone-alt"></i>
+                    <i class="fas fa-video"></i>
+                    <i class="fas fa-info-circle"></i>
+                </div>
+            </div>
+            
+            <div class="messages-container" id="messagesContainer">
+                <!-- Messages will be inserted here by JavaScript -->
+            </div>
+            
+            <div class="input-container">
+                <i class="far fa-smile"></i>
+                <i class="fas fa-paperclip"></i>
+                <input type="text" class="message-input" id="messageInput" placeholder="Type a message...">
+                <button class="send-button" id="sendButton">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            
+            // Sample conversation data
+            const conversation = [
+                {
+                    sender: 'Ahmad Azhaan',
+                    text: 'Hey there! How are you doing today?',
+                    time: '10:30 AM',
+                    sent: false
+                },
+                {
+                    sender: 'You',
+                    text: "I'm doing great! Just finished the project prototype.",
+                    time: '10:32 AM',
+                    sent: true
+                },
+                {
+                    sender: 'Ahmad Azhaan',
+                    text: 'That\'s awesome! Can you share the screens?',
+                    time: '10:33 AM',
+                    sent: false
+                },
+                {
+                    sender: 'You',
+                    text: 'Sure, I\'ll email them to you in a few minutes.',
+                    time: '10:35 AM',
+                    sent: true
+                },
+                {
+                    sender: 'Ahmad Azhaan',
+                    text: 'Perfect, looking forward to seeing what you\'ve created!',
+                    time: '10:36 AM',
+                    sent: false
+                }
+            ];
+            
+            // Display initial messages
+            conversation.forEach(msg => {
+                addMessageToChat(msg.text, msg.sent, msg.time);
+            });
+            
+            // Function to add message to chat
+            function addMessageToChat(text, isSent, time) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.classList.add(isSent ? 'sent' : 'received');
+                
+                const timeDisplay = time || getCurrentTime();
+                
+                messageElement.innerHTML = `
+                    <div class="message-text">${text}</div>
+                    <div class="message-time">${timeDisplay}</div>
+                `;
+                
+                messagesContainer.appendChild(messageElement);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+            
+            // Function to get current time in HH:MM format
+            function getCurrentTime() {
+                const now = new Date();
+                return now.getHours().toString().padStart(2, '0') + ':' + 
+                       now.getMinutes().toString().padStart(2, '0');
+            }
+            
+            // Send message when button is clicked
+            sendButton.addEventListener('click', sendMessage);
+            
+            // Send message when Enter key is pressed
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Function to handle sending a message
+            function sendMessage() {
+                const text = messageInput.value.trim();
+                if (text) {
+                    addMessageToChat(text, true);
+                    messageInput.value = '';
+                    
+                    // Simulate a reply after a short delay
+                    setTimeout(() => {
+                        const replies = [
+                            "Thanks for your message!",
+                            "I'll get back to you soon.",
+                            "That's interesting, tell me more!",
+                            "I was just thinking about that too.",
+                            "Can we discuss this tomorrow?"
+                        ];
+                        const randomReply = replies[Math.floor(Math.random() * replies.length)];
+                        addMessageToChat(randomReply, false);
+                    }, 1000 + Math.random() * 2000);
+                }
+            }
+            
+            // Contact selection functionality
+            const contacts = document.querySelectorAll('.contact');
+            contacts.forEach(contact => {
+                contact.addEventListener('click', function() {
+                    contacts.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const contactName = this.querySelector('.contact-name').textContent;
+                    const statusDot = this.querySelector('.status-dot') ? '<span class="status-dot"></span>' : '';
+                    
+                    document.querySelector('.current-contact .contact-name').innerHTML = contactName + statusDot;
+                    
+                    // Clear chat and show loading
+                    messagesContainer.innerHTML = '<div class="message received"><div class="message-text">Starting new conversation with ' + contactName + '...</div></div>';
+                    
+                    // Simulate loading messages
+                    setTimeout(() => {
+                        messagesContainer.innerHTML = '';
+                        const welcomeMessage = contactName + ': Hi there! How can I help you today?';
+                        addMessageToChat(welcomeMessage, false);
+                    }, 800);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
